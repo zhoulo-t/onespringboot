@@ -2,6 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.common.utils.DistributedLock;
 import com.example.demo.common.utils.RedisUtils;
+import com.example.demo.dao.UserMapper;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
@@ -22,6 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private UserMapper userMapper;
 
     private static final String USER_CACHE_PREFIX = "user:";
     private static final long CACHE_EXPIRE_TIME = 1; // 缓存过期时间1小时
@@ -50,15 +54,14 @@ public class UserServiceImpl implements UserService {
             }
 
             // 从数据库获取最新用户信息
-            User user = getUserFromDB(id);
+            User user = userMapper.selectById(id);
             if (user == null) {
                 throw new RuntimeException("用户不存在");
             }
 
             // 更新用户信息
             BeanUtils.copyProperties(userDTO, user);
-            // TODO: 调用数据库更新方法
-            // userMapper.updateById(user);
+            userMapper.updateById(user);
 
             // 更新缓存
             String cacheKey = USER_CACHE_PREFIX + id;
@@ -85,7 +88,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 缓存未命中，从数据库获取
-        User user = getUserFromDB(id);
+        User user = userMapper.selectById(id);
         if (user == null) {
             return null;
         }
@@ -99,21 +102,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public UserVO createUser(UserDTO userDTO) {
-        // TODO: 实现创建用户的逻辑
-        return new UserVO();
+        // 参数验证
+        if (userDTO == null) {
+            throw new RuntimeException("用户信息不能为空");
+        }
+        if (userDTO.getUsername() == null || userDTO.getUsername().trim().isEmpty()) {
+            throw new RuntimeException("用户名不能为空");
+        }
+        if (userDTO.getPassword() == null || userDTO.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("密码不能为空");
+        }
+
+        // 创建用户实体
+        User user = new User();
+        BeanUtils.copyProperties(userDTO, user);
+        user.setStatus(1); // 设置默认状态
+
+        // 保存到数据库
+        userMapper.insert(user);
+
+        // 转换为VO并缓存
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        String cacheKey = USER_CACHE_PREFIX + user.getId();
+        redisUtils.set(cacheKey, userVO, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+
+        return userVO;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteUser(Long id) {
-        // TODO: 实现删除用户的逻辑
-    }
-
-    /**
-     * 从数据库获取用户信息
-     */
-    private User getUserFromDB(Long id) {
-        // TODO: 实现从数据库获取用户信息的逻辑
-        return new User();
+        // 删除数据库记录
+        userMapper.deleteById(id);
+        
+        // 删除缓存
+        String cacheKey = USER_CACHE_PREFIX + id;
+        redisUtils.delete(cacheKey);
     }
 } 

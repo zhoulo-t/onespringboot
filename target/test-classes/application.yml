@@ -1,9 +1,4 @@
-server:
-  port: 8080
-
 spring:
-  application:
-    name: demo
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,14 +9,7 @@ spring:
   redis:
     host: localhost
     port: 6379
-    database: 0
-    timeout: 10s
-    lettuce:
-      pool:
-        min-idle: 0
-        max-idle: 8
-        max-active: 8
-        max-wait: -1ms
+    database: 1  # 使用不同的数据库，避免影响生产数据
 
 # MyBatis配置
 mybatis:
@@ -29,4 +17,4 @@ mybatis:
   type-aliases-package: com.example.demo.entity
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl 
