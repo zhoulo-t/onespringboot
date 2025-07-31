@@ -22,6 +22,22 @@ spring:
         max-idle: 8
         max-active: 8
         max-wait: -1ms
+    password: Xinyu!@#19931008
+  # Thymeleaf配置
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+  # FreeMarker配置
+  freemarker:
+    cache: false
+    charset: UTF-8
+    template-loader-path: classpath:/templates/
+    suffix: .ftl
+    content-type: text/html
+
 
 # MyBatis配置
 mybatis:

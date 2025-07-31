@@ -1,45 +1,33 @@
 package com.example.demo.test;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import com.example.demo.dto.User;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.File;
 
 public class Test {
 
     public static void main(String[] args) {
 
-        List<Student> list = new ArrayList<>();
-        Student student1 = new Student();
-        student1.setName("a");
-        list.add(student1);
+        try {
+            // 创建一个User对象
+            User user = new User();
+            user.setName("John Doe");
+            user.setAge(30);
 
-        Student student2 = new Student();
-        student2.setName("B");
-        list.add(student2);
 
-        Student student3 = new Student();
-        student3.setName("c");
-        list.add(student3);
-
-        list.forEach(student -> System.out.println(student.getName()));
-        list.sort(Comparator.comparing(Student::getName));
-        list.forEach(student -> System.out.println(student.getName()));
-        // 忽略大小写的排序
-        list.sort(Comparator.comparing(Student::getName, String.CASE_INSENSITIVE_ORDER));
-        list.forEach(student -> System.out.println(student.getName()));
-
-    }
-
-    static class Student {
-        public String name;
-
-        public String getName() {
-            return name;
+            JAXBContext context = JAXBContext.newInstance(User.class);
+            Marshaller marshaller = context.createMarshaller();
+            // 设置格式化输出
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            // 输出到文件
+            marshaller.marshal(user, new File("src/main/resources/user.xml"));
+        } catch (JAXBException e) {
+            e.printStackTrace();
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
     }
 
 

@@ -5,6 +5,8 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.entity.User;
 import com.example.demo.service.LoginService;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,10 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Setter
+    @Getter
+    private String name; //DEMO
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
